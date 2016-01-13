@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html lang="en" ng-app="BrazosOpen" ng-init="maintenanceOptions=[{name:'Scheduled'},{name:'Breakdown'},{name:'Follow Up'}]">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="/brazos-open/css/brazos-all-min.css" rel="stylesheet">
+    <script src="/brazos-open/js/brazosopen-min.js"></script>
+</head>
+
+<body ng-controller="bzBrokerController" >
+
+<bz-broker-def>
+    <!-- Servies called on page load -->
+    <bz-service-call-boundary-event output="workersList" script="groovy/jsonReturnList.groovy"></bz-service-call-boundary-event>
+    <bz-service-call-boundary-event output="sites" script="groovy/getWindSiteInfo.groovy"></bz-service-call-boundary-event>
+    <!-- Services called when a variable changes -->
+    <bz-service-call-boundary-event input='data.selectedSiteId' output="data.currentSite" script="groovy/getCurrentSite.groovy"></bz-service-call-boundary-event>
+    <bz-service-call-boundary-event input="data.selectedTower" output="maintenanceRecord" script="groovy/getMaintenanceRecord.groovy"></bz-service-call-boundary-event>
+    <bz-service-call-boundary-event input="data.currentSite" output="towers" script="groovy/getTowers.groovy"></bz-service-call-boundary-event>
+
+    <bz-client-function name="updateSelectedTower" output="data.selectedTower" parameters="selected">
+		if(selected){
+			var outputData = selected;
+			return outputData;
+		} else return scope.data.selectedTower;
+    </bz-client-function>
+	
+	
+</bz-broker-def>
+
+    <bz-template alerts="alerts" close-alert='closeAlert'>
+	
+        <bz-modal-content title="Maintenance History" modal-id="history" modal-size="md">
+            <bz-row>
+                <bz-col width='12'>
+                    <bz-section label='Maintenance History'>
+					<bz-output ng-model="data.currentSite.name"></bz-output>
+						<bz-output ng-model="data.currentSite.description"></bz-output>
+                        <bz-table tabledata="modalData" global-search="false" show-pagination="false" items-per-page="2">
+                            <bz-column title="Category" sort="type">
+                                <span>{{entity.type}}</span>
+                            </bz-column>
+                            <bz-column title="Description" sort="description">
+                                <span>{{entity.description}}</span>
+                            </bz-column>
+                            <bz-column title="Technician" sort="status">
+                                <span>{{entity.technician}}</span>
+                            </bz-column>
+                            <bz-column title="Status" sort="status">
+                                <span>{{entity.status}}</span>
+                            </bz-column>
+                        </bz-table>						
+                    </bz-section>
+                </bz-col>
+            </bz-row>
+            <bz-button id="modalCloseButton" label="Close" event-handler="$close()"></bz-button>
+        </bz-modal-content>
+        <bz-row>
+            <bz-col width='4'>
+                <bz-section label='Site Selection'>
+                    <bz-radiogroup id='radioWidget' label = 'Select Site Location' name='siteRadio' ng-model='data.selectedSiteId' binding="data.selectedSiteId" key='id' selection="name" options='sites.sites'></bz-radiogroup>
+                    <bz-output label="Site Description" ng-model="data.currentSite.description"></bz-output>
+                    <span><b>Select Tower</b></span>
+					<bz-select-box ng-model="data.selected" select-data="towers" display-expression="entity" bz-execute-function="updateSelectedTower(data.selected)" bz-execute-on-change="data.selected"></bz-select-box>
+                </bz-section>
+            </bz-col>
+            <bz-col width='8'>
+                <bz-section label='Location Details'>
+					 <bz-iframe id="bziframe" frame-src="https://www.google.com/maps/embed/v1/place?key=AIzaSyD5dBvqe8gnbeY95vuHfMHEo6sPbMvcEwU&q={{data.currentSite.latitude}},{{data.currentSite.longitude}}&zoom=8" reload-on="data.currentSite" width="100%" height="300px" trust="true" border="true"></bz-iframe>
+                </bz-section>
+            </bz-col>
+        </bz-row>
+        <bz-row>
+            <bz-col width='4'>
+                <bz-section label='Work Details'>
+                    <span><b>Type of Maintenance</b></span>
+					<bz-select-box ng-model="data.maintenanceType" select-data="maintenanceOptions" key="name" display-expression="entity.name"></bz-select-box>
+                    <span><b>Reported By</b></span>
+					<bz-select-box ng-model="data.personVar" select-data="workersList" display-expression="entity.firstName + ' ' + entity.lastName"></bz-select-box>
+                    <bz-checkbox id='expediteCheck' label = 'Expedide' ng-model='data.expedite' ng-show="data.selectedSiteId==3"></bz-checkbox>
+                    <bz-date-picker label="Date Reported" id='datePickerWidget' ng-model="data.dateReported" ></bz-date-picker>
+					<bz-button id="modalButton" append="Maintenance History" bz-modal-trigger="history" event-handler="$openModal(maintenanceRecord)"></bz-button>
+                    <bz-button id='button' label='Complete Task' event-handler='CompleteTask()'></bz-button>
+                </bz-section>
+            </bz-col>
+            <bz-col width="8">
+                <bz-section label='Description'>
+                    <bz-richtexteditor ng-model="data.maintenanceText" label='Details of Work to be Performed' height="100" focus="false" air-mode="false"></bz-richtexteditor>
+                </bz-section>
+            </bz-col>
+        </bz-row>
+    </bz-template>
+    </div>
+</body>
+
+</html>

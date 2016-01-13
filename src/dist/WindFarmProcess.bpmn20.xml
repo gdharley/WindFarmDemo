@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Licensed Materials - Property of BP3
+  ~
+  ~   Brazos-Open
+  ~
+  ~  Copyright © BP3 Global Inc. 2015. All Rights Reserved.
+  ~  This software is subject to copyright protection under
+  ~  the laws of the United States and other countries.
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="WindFarmMaintenance" name="Wind Farm Maintenance" isExecutable="true">
+    <startEvent id="startevent1" name="Start" activiti:initiator="initiator"></startEvent>
+    <scriptTask id="init" name="init" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>
+/**
+ * @author dparish
+ */
+
+import com.bp3.brazosopen.activiti.model.Person
+
+def now = new Date();
+def person = new Person();
+person.setId(12l);
+person.setFirstName("David");
+person.setLastName("Parish");
+person.setBirthday(new Date().parse("d/M/yyyy", "25/07/1969"));
+execution.setVariable("personVar", person);
+execution.setVariable("selectedSiteId", 1);
+execution.setVariable("selectedTower", "BM4543");
+execution.setVariable("maintenanceType", "Scheduled");
+execution.setVariable("maintenanceText", "");
+execution.setVariable("dateReported", now);
+execution.setVariable("expedite", false);
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="init"></sequenceFlow>
+    <userTask id="usertask1" name="Create Maintenance Request" activiti:formKey="html/windfarm_submit.html">
+        <humanPerformer>
+            <resourceAssignmentExpression>
+                <formalExpression>${initiator}</formalExpression>
+            </resourceAssignmentExpression>
+        </humanPerformer>
+    </userTask>
+    <sequenceFlow id="flow2" sourceRef="init" targetRef="usertask1"></sequenceFlow>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <sequenceFlow id="flow3" sourceRef="usertask1" targetRef="endevent1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_myProcess">
+    <bpmndi:BPMNPlane bpmnElement="myProcess" id="BPMNPlane_myProcess">
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="30.0" width="30.0" x="90.0" y="210.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="init" id="BPMNShape_init">
+        <omgdc:Bounds height="55.0" width="105.0" x="170.0" y="200.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+        <omgdc:Bounds height="55.0" width="105.0" x="320.0" y="200.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="28.0" width="28.0" x="470.0" y="210.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="425.0" y="225.85201793721973"></omgdi:waypoint>
+        <omgdi:waypoint x="470.00689229079813" y="224.4392455334727"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="275.0" y="227.5"></omgdi:waypoint>
+        <omgdi:waypoint x="320.0" y="227.5"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="119.99660595085598" y="225.31907672235863"></omgdi:waypoint>
+        <omgdi:waypoint x="170.0" y="226.38297872340425"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
